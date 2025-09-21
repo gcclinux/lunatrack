@@ -90,13 +90,41 @@ export default function App() {
             </div>
             <div className="card">
               <h2 className="text-lg font-medium mb-2">Recent entries</h2>
-              <ul className="space-y-1">
-                {entries?.entries.slice().reverse().slice(0, 9).map((d: string) => (
-                  <li key={d} className="flex items-center justify-between">
-                    <span>{d}</span>
-                    <button className="btn btn-ghost text-rose-700" onClick={() => toggleDate(d)}>remove</button>
-                  </li>
-                ))}
+              <ul className="space-y-2.5">
+                <li className="flex items-center font-semibold text-rose-700">
+                  <span className="w-32">Date</span>
+                  <span className="flex-1" />
+                  <span className="w-32 text-right">Cycle length</span>
+                </li>
+                {(() => {
+                  const recent = entries?.entries.slice().reverse().slice(0, 12) || [];
+                  return recent.map((d: string, i: number) => {
+                    let cycle = '';
+                    if (i < recent.length - 1) {
+                      const prev = recent[i + 1];
+                      const days = Math.abs(
+                        Math.round((new Date(d).getTime() - new Date(prev).getTime()) / (1000 * 60 * 60 * 24))
+                      );
+                      cycle = days > 0 ? days + ' days' : '';
+                    } else if (recent.length > 1 && entries) {
+                      // For the last entry, show the gap to the next entry in the full list if available
+                      const next = entries.entries.slice().reverse()[12];
+                      if (next) {
+                        const days = Math.abs(
+                          Math.round((new Date(d).getTime() - new Date(next).getTime()) / (1000 * 60 * 60 * 24))
+                        );
+                        cycle = days > 0 ? days + ' days' : '';
+                      }
+                    }
+                    return (
+                      <li key={d} className="flex items-center">
+                        <span className="w-32">{d}</span>
+                        <span className="flex-1" />
+                        <span className="w-32 text-right">{cycle}</span>
+                      </li>
+                    );
+                  });
+                })()}
                 {entries?.entries.length === 0 && <li className="text-rose-600">No entries yet. Click a date on the calendar to add your last period start.</li>}
               </ul>
             </div>
