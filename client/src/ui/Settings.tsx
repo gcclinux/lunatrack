@@ -248,12 +248,14 @@ export function Settings({ settings, onSave }: {
       <div className="card h-full flex flex-col max-w-lg">
         <h2 className="text-lg font-medium mb-2">About</h2>
         <p className="text-rose-700 text-sm mb-2">
-          <span className="font-semibold">LunaTrack</span> helps you track your cycles, moods, and more with privacy and ease.
+          <span className="font-semibold">LunaTrack</span> is your private, modern period tracker. Effortlessly log your cycles, moods, and symptoms, and get helpful predictions for your next period.
         </p>
         <ul className="text-rose-700 text-sm list-disc pl-5 mb-2">
-          <li>All data is stored locally by default</li>
-          <li>Backup & restore for peace of mind</li>
-          <li>PIN protection for privacy</li>
+          <li><span className="font-semibold">Past Records:</span> View your full cycle history and recent entries for easy reference.</li>
+          <li><span className="font-semibold">Future Prediction:</span> LunaTrack estimates your next period based on your past cycles, helping you plan ahead.</li>
+          <li><span className="font-semibold">All data is stored locally</span> for your privacy.</li>
+          <li><span className="font-semibold">Backup & Restore:</span> Export and import your data for peace of mind.</li>
+          <li><span className="font-semibold">PIN protection:</span> Secure your sensitive information.</li>
         </ul>
         <div className="mt-auto pt-4 text-xs text-rose-400">
           <div>Version 1.0.0</div>
