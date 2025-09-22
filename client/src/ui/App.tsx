@@ -4,6 +4,7 @@ import { Stats } from './Stats'
 import { Settings } from './Settings'
 import { History } from './History'
 import { ConfirmDialog } from './ConfirmDialog'
+import { PinEntryDialog } from './PinEntryDialog'
 import { api } from '../utils/api'
 import { formatDate } from '../utils/dateUtils'
 import type { AppEntries, Settings as SettingsType } from '../utils/types'
@@ -14,6 +15,8 @@ export default function App() {
   const [entries, setEntries] = useState<AppEntries | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showPinDialog, setShowPinDialog] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean
     title: string
@@ -33,6 +36,16 @@ export default function App() {
       try {
         const s = await api.getSettings()
         setSettings(s)
+        
+        // Check if PIN is enabled and user needs to authenticate
+        if (s.pinEnabled && s.pin && s.pin.length >= 4) {
+          setShowPinDialog(true)
+          setLoading(false)
+          return // Don't load entries until authenticated
+        } else {
+          setIsAuthenticated(true)
+        }
+        
         const e = await api.getEntries()
         setEntries(e)
       } catch (e: any) {
@@ -42,6 +55,31 @@ export default function App() {
       }
     })()
   }, [])
+
+  // Load entries after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && settings && !entries) {
+      (async () => {
+        try {
+          const e = await api.getEntries()
+          setEntries(e)
+        } catch (e: any) {
+          setError(e.message || 'Failed to load entries')
+        }
+      })()
+    }
+  }, [isAuthenticated, settings, entries])
+
+  const handlePinSuccess = () => {
+    setIsAuthenticated(true)
+    setShowPinDialog(false)
+  }
+
+  const handlePinCancel = () => {
+    // For now, just close the dialog - could implement app exit logic here
+    setShowPinDialog(false)
+    setError('Authentication required to access the app')
+  }
 
   const today = useMemo(() => new Date().toISOString().slice(0,10), [])
 
@@ -115,6 +153,31 @@ export default function App() {
   }
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-red-700">{error}</div>
+  }
+
+  // Show PIN dialog if authentication is required
+  if (showPinDialog && settings?.pinEnabled && settings?.pin) {
+    return (
+      <>
+        <div className="min-h-screen flex items-center justify-center text-rose-900">
+          <div className="text-center">
+            <h1 className="text-3xl font-semibold mb-2">Joanna Tracker</h1>
+            <p className="text-rose-700">Please enter your PIN to continue</p>
+          </div>
+        </div>
+        <PinEntryDialog
+          isOpen={showPinDialog}
+          expectedPin={settings.pin}
+          onSuccess={handlePinSuccess}
+          onCancel={handlePinCancel}
+        />
+      </>
+    )
+  }
+
+  // Don't render main app until authenticated
+  if (!isAuthenticated) {
+    return <div className="min-h-screen flex items-center justify-center text-rose-900">Authentication required…</div>
   }
 
   return (

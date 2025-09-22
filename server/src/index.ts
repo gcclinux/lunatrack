@@ -34,7 +34,8 @@ async function writeJson(p: string, data: unknown, opts?: { spaces?: number }) {
 
 // Schemas
 const SettingsSchema = z.object({
-  username: z.string().default(''),
+  pin: z.string().default(''),
+  pinEnabled: z.boolean().default(false),
   dataFile: z.string().min(1).default('cycles.json'),
   defaultCycleLength: z.number().int().positive().max(120).default(28)
 });

@@ -79,9 +79,19 @@ export function Settings({ settings, onSave }: {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
+    
+    // Validate PIN if enabled
+    if (form.pinEnabled && (form.pin.length < 4 || form.pin.length > 6)) {
+      showNotification('Invalid PIN', 'PIN must be between 4 and 6 digits.', 'error')
+      return
+    }
+    
     setSaving(true)
     try {
       await onSave(form)
+      showNotification('Settings Saved', 'Your settings have been saved successfully!', 'success')
+    } catch (error) {
+      showNotification('Save Failed', 'Failed to save settings. Please try again.', 'error')
     } finally {
       setSaving(false)
     }
@@ -152,8 +162,38 @@ export function Settings({ settings, onSave }: {
     <div className="space-y-6">
       <form className="card max-w-lg" onSubmit={submit}>
         <h2 className="text-lg font-medium mb-3">Settings</h2>
-        <label className="label">Username</label>
-        <input className="input mb-3" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+        
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          <div>
+            <label className="label">PIN / Pass</label>
+            <input 
+              type="password" 
+              className="input" 
+              value={form.pin} 
+              onChange={e => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 6) // Only digits, max 6
+                setForm({ ...form, pin: value })
+              }}
+              placeholder="4-6 digits"
+              maxLength={6}
+              pattern="[0-9]{4,6}"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="label">Enabled</label>
+            <div className="flex items-center h-10">
+              <input 
+                type="checkbox" 
+                className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2" 
+                checked={form.pinEnabled}
+                onChange={e => setForm({ ...form, pinEnabled: e.target.checked })}
+              />
+              <span className="ml-2 text-sm text-rose-700">
+                {form.pinEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <label className="label">Default cycle length (days)</label>
         <input type="number" min={15} max={120} className="input mb-4" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />

@@ -1,6 +1,6 @@
 export type Settings = {
-  username: string
-  dataFile: string
+  pin: string
+  pinEnabled: boolean
   defaultCycleLength: number
 }
 

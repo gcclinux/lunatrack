@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import fs from 'fs-extra';
+import { promises as fs } from 'node:fs';
 import { z } from 'zod';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,10 +11,30 @@ app.use(cors());
 app.use(express.json());
 // Data directory under project root
 const DATA_DIR = path.resolve(__dirname, '../../data');
-await fs.ensureDir(DATA_DIR);
+await fs.mkdir(DATA_DIR, { recursive: true });
+// Minimal helpers replacing fs-extra
+async function pathExists(p) {
+    try {
+        await fs.access(p);
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+async function readJson(p) {
+    const txt = await fs.readFile(p, 'utf8');
+    return JSON.parse(txt);
+}
+async function writeJson(p, data, opts) {
+    const spaces = opts?.spaces ?? 0;
+    const txt = JSON.stringify(data, null, spaces);
+    await fs.writeFile(p, txt, 'utf8');
+}
 // Schemas
 const SettingsSchema = z.object({
-    username: z.string().min(1).default(''),
+    pin: z.string().default(''),
+    pinEnabled: z.boolean().default(false),
     dataFile: z.string().min(1).default('cycles.json'),
     defaultCycleLength: z.number().int().positive().max(120).default(28)
 });
@@ -25,34 +45,34 @@ function sortDatesAsc(dates) {
 }
 async function readSettings() {
     const settingsPath = path.join(DATA_DIR, 'settings.json');
-    if (!(await fs.pathExists(settingsPath))) {
+    if (!(await pathExists(settingsPath))) {
         const defaults = SettingsSchema.parse({});
-        await fs.writeJson(settingsPath, defaults, { spaces: 2 });
+        await writeJson(settingsPath, defaults, { spaces: 2 });
         return defaults;
     }
-    const raw = await fs.readJson(settingsPath);
+    const raw = await readJson(settingsPath);
     // tolerate partial/older schemas
     return SettingsSchema.parse(raw);
 }
 async function writeSettings(s) {
     const parsed = SettingsSchema.parse(s);
     const settingsPath = path.join(DATA_DIR, 'settings.json');
-    await fs.writeJson(settingsPath, parsed, { spaces: 2 });
+    await writeJson(settingsPath, parsed, { spaces: 2 });
     return parsed;
 }
 async function readEntries(dataFile) {
     const filePath = path.join(DATA_DIR, dataFile);
-    if (!(await fs.pathExists(filePath))) {
-        await fs.writeJson(filePath, { entries: [] }, { spaces: 2 });
+    if (!(await pathExists(filePath))) {
+        await writeJson(filePath, { entries: [] }, { spaces: 2 });
         return [];
     }
-    const raw = await fs.readJson(filePath);
+    const raw = await readJson(filePath);
     const entries = Array.isArray(raw?.entries) ? raw.entries : [];
     return entries.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
 }
 async function writeEntries(dataFile, dates) {
     const filePath = path.join(DATA_DIR, dataFile);
-    await fs.writeJson(filePath, { entries: sortDatesAsc(dates) }, { spaces: 2 });
+    await writeJson(filePath, { entries: sortDatesAsc(dates) }, { spaces: 2 });
 }
 function diffDays(a, b) {
     const da = new Date(a + 'T00:00:00Z');
@@ -157,5 +177,5 @@ app.delete('/api/entries/:date', async (req, res) => {
 });
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`moontrack server running on http://localhost:${PORT}`);
+    console.log(`Joanna Tracker server running on http://localhost:${PORT}`);
 });
