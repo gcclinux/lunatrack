@@ -21,3 +21,4 @@ pnpm-debug.log*
 
 # Data
 /data/cycles.json
+/data/settings.json
