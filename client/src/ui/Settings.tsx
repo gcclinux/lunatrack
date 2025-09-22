@@ -111,12 +111,19 @@ export function Settings({ settings, onSave }: {
       // Create download link
       const link = document.createElement('a')
       link.href = url
-  link.download = `lunatrack-backup-${new Date().toISOString().slice(0, 10)}.json`
+      link.download = `lunatrack-backup-${new Date().toISOString().slice(0, 10)}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-      
+      // Set fileProtected to true after export
+      try {
+        await fetch('/api/file-protected', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileProtected: true })
+        })
+      } catch {}
       showNotification('Export Successful', 'Your cycle data has been downloaded successfully!', 'success')
     } catch (error) {
       showNotification('Export Failed', 'Failed to export data. Please try again.', 'error')

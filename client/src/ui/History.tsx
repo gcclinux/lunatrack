@@ -9,6 +9,19 @@ type HistoryProps = {
 
 export function History({ entries, onToggleDate, today }: HistoryProps) {
   const sorted = entries.slice().sort((a, b) => b.localeCompare(a))
+
+  // Wrap the onToggleDate to also update fileProtected after removal
+  async function handleRemove(date: string) {
+    await onToggleDate(date)
+    try {
+      await fetch('/api/file-protected', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileProtected: false })
+      })
+    } catch {}
+  }
+
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div className="card">
@@ -25,7 +38,7 @@ export function History({ entries, onToggleDate, today }: HistoryProps) {
               {sorted.map((date: string, i: number) => (
                 <li key={date} className={`flex items-center justify-between py-2 ${i % 2 === 0 ? 'bg-rose-50' : 'bg-rose-100'}`}>
                   <span className="text-rose-900">{formatDate(date)}</span>
-                  <button className="btn btn-ghost text-rose-700" onClick={() => onToggleDate(date)}>remove</button>
+                  <button className="btn btn-ghost text-rose-700" onClick={() => handleRemove(date)}>remove</button>
                 </li>
               ))}
             </ul>

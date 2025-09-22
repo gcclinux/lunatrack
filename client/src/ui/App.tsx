@@ -1,4 +1,29 @@
 import { useEffect, useMemo, useState } from 'react'
+// Export logic reused from Settings
+async function exportData() {
+  try {
+    const response = await fetch('/api/entries')
+    const data = await response.json()
+    const dataStr = JSON.stringify(data, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `lunatrack-backup-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    // Set fileProtected to true after export
+    try {
+      await fetch('/api/file-protected', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileProtected: true })
+      })
+    } catch {}
+  } catch {}
+}
 import { Calendar } from './Calendar'
 import { Stats } from './Stats'
 import { Settings } from './Settings'
@@ -20,6 +45,20 @@ export default function App() {
       .catch(() => setInspiration(null));
   }, []);
   const [tab, setTab] = useState<'track' | 'stats' | 'history' | 'settings'>('track')
+  const [fileProtected, setFileProtected] = useState<boolean | null>(null)
+  // Check fileProtected status on load/refresh
+  useEffect(() => {
+    async function checkFileProtected() {
+      try {
+        const res = await fetch('/api/file-protected')
+        const data = await res.json()
+        setFileProtected(typeof data.fileProtected === 'boolean' ? data.fileProtected : true)
+      } catch {
+        setFileProtected(true)
+      }
+    }
+    checkFileProtected()
+  }, [])
   const [settings, setSettings] = useState<SettingsType | null>(null)
   const [entries, setEntries] = useState<AppEntries | null>(null)
   const [loading, setLoading] = useState(true)
@@ -133,7 +172,22 @@ export default function App() {
   async function performToggle(date: string, exists: boolean) {
     try {
       setError(null)
-      const updated = exists ? await api.deleteEntry(date) : await api.addEntry(date)
+      let updated;
+      if (!exists) {
+        // Add entry, then set fileProtected to false
+        updated = await api.addEntry(date)
+        // Set fileProtected to false after successful add
+        try {
+          await fetch('/api/file-protected', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileProtected: false })
+          })
+        } catch {}
+      } else {
+        // Remove entry
+        updated = await api.deleteEntry(date)
+      }
       setEntries((prev: AppEntries | null) => prev ? { ...prev, entries: updated.entries } : prev)
       // refresh stats after mutation
       const e = await api.getEntries()
@@ -321,7 +375,29 @@ export default function App() {
       </div>
 
       <footer className="mt-8 text-center text-sm text-rose-600">
-        Your data is stored locally in JSON files. No cloud, no ads.
+        {fileProtected === null ? null : fileProtected ? (
+          <span>Your data is stored locally in JSON files. No cloud, no ads.</span>
+        ) : (
+          <span>
+            Changes have been made to your local JSON file, protect your data and run a Backup.{' '}
+            <button
+              className="btn btn-primary btn-xs h-5 ml-2 inline-flex items-center"
+              onClick={async () => {
+                await exportData();
+                // Re-check fileProtected after export
+                try {
+                  const res = await fetch('/api/file-protected')
+                  const data = await res.json()
+                  setFileProtected(typeof data.fileProtected === 'boolean' ? data.fileProtected : true)
+                } catch {
+                  setFileProtected(true)
+                }
+              }}
+            >
+              Export Data
+            </button>
+          </span>
+        )}
       </footer>
 
       <ConfirmDialog

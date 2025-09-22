@@ -1,0 +1,7 @@
+{
+  "pin": "000000",
+  "pinEnabled": false,
+  "dataFile": "cycles.json",
+  "defaultCycleLength": 27,
+  "fileProtected": false
+}

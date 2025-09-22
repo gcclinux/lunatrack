@@ -37,7 +37,33 @@ const SettingsSchema = z.object({
   pin: z.string().default(''),
   pinEnabled: z.boolean().default(false),
   dataFile: z.string().min(1).default('cycles.json'),
-  defaultCycleLength: z.number().int().positive().max(120).default(28)
+  defaultCycleLength: z.number().int().positive().max(120).default(28),
+  fileProtected: z.boolean().default(false)
+});
+// API: Get fileProtected status
+app.get('/api/file-protected', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    res.json({ fileProtected: !!s.fileProtected });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// API: Set fileProtected status
+app.put('/api/file-protected', async (req, res) => {
+  try {
+    const { fileProtected } = req.body;
+    if (typeof fileProtected !== 'boolean') {
+      return res.status(400).json({ error: 'fileProtected must be boolean' });
+    }
+    const s = await readSettings();
+    const updated = { ...s, fileProtected };
+    await writeSettings(updated);
+    res.json({ fileProtected });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
 });
 
 const EntrySchema = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) });
