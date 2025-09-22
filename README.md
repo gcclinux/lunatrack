@@ -1,4 +1,4 @@
-# Joanna Tracker (Period & Cycle Tracker)
+# LunaTrack (Period & Cycle Tracker)
 
 A simple, pretty, privacy-first period tracker. Choose dates on a calendar, see past entries, current cycle status, an estimate for the next period, and future predictions based on your average cycle length. Settings like username and data filename are stored locally.
 
@@ -49,3 +49,23 @@ Frontend:
 
 Root helper (optional):
 - `npm run dev` to start both concurrently (after initial setup)
+
+## API Endpoints
+
+### Health
+- `GET /api/health` — Returns `{ ok: true }` if the server is running.
+
+### Settings
+- `GET /api/settings` — Get current app settings.
+- `PUT /api/settings` — Update app settings. Expects JSON body matching settings schema.
+
+### Entries
+- `GET /api/entries` — Get all period entries and stats (cycle length, predictions, etc).
+- `POST /api/entries` — Add a new entry. Expects `{ date: 'YYYY-MM-DD' }` in JSON body.
+- `DELETE /api/entries/:date` — Remove an entry by date (format: `YYYY-MM-DD`).
+
+### Inspiration
+- `GET /api/inspiration/:id` — Get a single inspiration message by id (1–60). Returns `{ id, message }`.
+
+---
+All endpoints return JSON. For more details, see `server/src/index.ts`.
