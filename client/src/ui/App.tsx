@@ -4,6 +4,7 @@ import { Stats } from './Stats'
 import { Settings } from './Settings'
 import { History } from './History'
 import { api } from '../utils/api'
+import { formatDate } from '../utils/dateUtils'
 import type { AppEntries, Settings as SettingsType } from '../utils/types'
 
 export default function App() {
@@ -92,7 +93,7 @@ export default function App() {
               <h2 className="text-lg font-medium mb-2">Recent entries</h2>
               <ul className="space-y-2.5">
                 <li className="flex items-center font-semibold text-rose-700">
-                  <span className="w-32">Date</span>
+                  <span className="w-48">Date</span>
                   <span className="flex-1" />
                   <span className="w-32 text-right">Cycle length</span>
                 </li>
@@ -118,7 +119,7 @@ export default function App() {
                     }
                     return (
                       <li key={d} className="flex items-center">
-                        <span className="w-32">{d}</span>
+                        <span className="w-48">{formatDate(d)}</span>
                         <span className="flex-1" />
                         <span className="w-32 text-right">{cycle}</span>
                       </li>

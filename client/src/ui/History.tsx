@@ -1,4 +1,5 @@
 import { Calendar } from './Calendar'
+import { formatDate } from '../utils/dateUtils'
 
 type HistoryProps = {
   entries: string[]
@@ -23,7 +24,7 @@ export function History({ entries, onToggleDate, today }: HistoryProps) {
             <ul className="space-y-1">
               {sorted.map((date: string) => (
                 <li key={date} className="flex items-center justify-between py-2">
-                  <span className="text-rose-900">{date}</span>
+                  <span className="text-rose-900">{formatDate(date)}</span>
                   <button className="btn btn-ghost text-rose-700" onClick={() => onToggleDate(date)}>remove</button>
                 </li>
               ))}

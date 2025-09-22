@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { formatDate } from '../utils/dateUtils'
 
 export function Calendar({ selectedDates, onToggleDate, today }: {
   selectedDates: string[]
@@ -51,7 +52,7 @@ export function Calendar({ selectedDates, onToggleDate, today }: {
                 cell.inMonth ? 'border-rose-200' : 'border-transparent text-rose-400'
               } ${selected ? 'bg-primary-500 text-white' : 'hover:bg-rose-100'} ${isToday ? 'ring-2 ring-primary-300' : ''}`}
               onClick={() => onToggleDate(cell.date)}
-              title={cell.date}
+              title={formatDate(cell.date)}
             >
               {parseInt(cell.date.slice(8,10), 10)}
             </button>
