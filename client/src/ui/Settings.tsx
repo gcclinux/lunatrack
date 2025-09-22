@@ -202,8 +202,50 @@ export function Settings({ settings, onSave }: {
               </div>
             </div>
           </div>
-          <label className="label">Default cycle length (days)</label>
-          <input type="number" min={15} max={120} className="input mb-4 h-8" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />
+          <div className="grid grid-cols-2 gap-4 items-end mb-4">
+            <div>
+              <label className="label">Default cycle length (days)</label>
+              <input
+                type="number"
+                min={15}
+                max={120}
+                className="input h-8 w-full"
+                value={form.defaultCycleLength}
+                onChange={e => setForm({ ...(form as any), defaultCycleLength: Number(e.target.value) || 28 })}
+              />
+            </div>
+
+            <div>
+              <label className="label">Ovulation</label>
+              <div className="flex items-center h-8">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2"
+                  checked={Boolean((form as any).enableOvulation)}
+                  onChange={async e => {
+                    const enabled = e.target.checked
+                    // Update local form optimistically
+                    setForm((prev: any) => ({ ...prev, enableOvulation: enabled }))
+                    try {
+                      await fetch('/api/enable-ovulation', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ enableOvulation: enabled })
+                      })
+                      showNotification('Settings Saved', `Ovulation ${enabled ? 'enabled' : 'disabled'}`, 'success')
+                    } catch (err) {
+                      // revert on error
+                      setForm((prev: any) => ({ ...prev, enableOvulation: !enabled }))
+                      showNotification('Save Failed', 'Failed to update ovulation setting. Please try again.', 'error')
+                    }
+                  }}
+                />
+                <span className="ml-2 text-sm text-rose-700">
+                  {(form as any).enableOvulation ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="flex gap-2">
             <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
               {saving ? 'Saving…' : 'Save settings'}
