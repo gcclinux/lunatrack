@@ -36,18 +36,30 @@ export function PredictionCalendar({ year, month, predictions, averageCycleLengt
 
   const monthName = new Date(year, month, 1).toLocaleString(undefined, { month: 'long', year: 'numeric' })
 
-  // Define fertile windows as days 1..5 after each prediction (inclusive)
-  const fertileWindows: Record<string, {start: string, end: string}> = {}
+  // Helper: parse a YYYY-MM-DD date string into a UTC Date at midnight
+  function parseISODateToUTC(iso: string) {
+    const [y, m, d] = iso.split('-').map(Number)
+    return new Date(Date.UTC(y, m - 1, d))
+  }
+
+  // Use averageCycleLength to calculate fertile window and ovulation for each prediction
+  // Fertile window: days (cycleLen-18) to (cycleLen-13) after period start
+  // Ovulation: day (cycleLen-14) after period start
+  const fertileWindows: Record<string, {start: string, end: string, ovulation: string}> = {}
+  const ovulationSet = new Set<string>()
   predictions.forEach(pred => {
-    const start = new Date(pred)
+    const start = parseISODateToUTC(pred)
     const fertileStart = new Date(start)
-    fertileStart.setUTCDate(start.getUTCDate() + 1) // day 1 after prediction
+    fertileStart.setUTCDate(start.getUTCDate() + averageCycleLength - 18)
     const fertileEnd = new Date(start)
-    fertileEnd.setUTCDate(start.getUTCDate() + 5) // through day 5 after prediction
-    fertileWindows[pred] = {
-      start: fertileStart.toISOString().slice(0,10),
-      end: fertileEnd.toISOString().slice(0,10)
-    }
+    fertileEnd.setUTCDate(start.getUTCDate() + averageCycleLength - 13)
+    const ovulation = new Date(start)
+    ovulation.setUTCDate(start.getUTCDate() + averageCycleLength - 14)
+    const s = fertileStart.toISOString().slice(0,10)
+    const e = fertileEnd.toISOString().slice(0,10)
+    const o = ovulation.toISOString().slice(0,10)
+    fertileWindows[pred] = { start: s, end: e, ovulation: o }
+    ovulationSet.add(o)
   })
 
   function getFertilityStatus(date: string): 'fertile' | null {
@@ -85,15 +97,17 @@ export function PredictionCalendar({ year, month, predictions, averageCycleLengt
           }
 
           return (
-            <div key={i} className="relative h-5">
+            <div key={i} className="relative h-5 overflow-hidden">
               {fertileSpans.map((s, idx) => {
                 const leftPct = (s.start / 7) * 100
-                const widthPct = ((s.end - s.start + 1) / 7) * 100
+                // width stops at middle of last cell (+0.5) and add 5px so it doesn't stick out
+                const percentPart = ((s.end - s.start + 0.5) / 7) * 100
+                const widthCalc = `calc(${percentPart}% + 5px)`
                 return (
                   <div
                     key={idx}
                     className="absolute top-0 left-0 h-full bg-blue-200"
-                    style={{ left: `${leftPct}%`, width: `${widthPct}%`, zIndex: 0 }}
+                    style={{ left: `${leftPct}%`, width: widthCalc, zIndex: 0 }}
                   />
                 )
               })}
@@ -102,9 +116,13 @@ export function PredictionCalendar({ year, month, predictions, averageCycleLengt
                 {row.map((cell, j) => {
                   const predicted = predictions.includes(cell.date)
                   const fertility = getFertilityStatus(cell.date)
+                  const isOvulation = ovulationSet.has(cell.date)
                   let cellClass = 'relative z-10'
                   if (predicted) {
                     cellClass += ' bg-primary-500 text-white font-bold'
+                  } else if (isOvulation) {
+                    // ovulation: keep background untouched, show dark-blue number
+                    cellClass += ' text-blue-800 font-bold'
                   } else if (fertility === 'fertile') {
                     // keep text color normal so the blue stripe shows through
                     cellClass += cell.inMonth ? ' text-rose-700' : ' text-rose-400'
