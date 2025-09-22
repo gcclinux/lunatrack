@@ -10,6 +10,15 @@ import { formatDate } from '../utils/dateUtils'
 import type { AppEntries, Settings as SettingsType } from '../utils/types'
 
 export default function App() {
+  // Inspiration message state
+  const [inspiration, setInspiration] = useState<string | null>(null);
+  useEffect(() => {
+    const randomId = Math.floor(Math.random() * 60) + 1;
+    fetch(`/api/inspiration/${randomId}`)
+      .then(res => res.json())
+      .then(data => setInspiration(data.message))
+      .catch(() => setInspiration(null));
+  }, []);
   const [tab, setTab] = useState<'track' | 'stats' | 'history' | 'settings'>('track')
   const [settings, setSettings] = useState<SettingsType | null>(null)
   const [entries, setEntries] = useState<AppEntries | null>(null)
@@ -214,8 +223,8 @@ export default function App() {
               {/* Inspiring Message of the Day */}
               <div className="card flex-shrink-0">
                 <h2 className="text-lg font-medium mb-2">Inspiration</h2>
-                <p className="text-rose-700 italic text-base text-center">
-                  "Every cycle is a new beginning. Embrace your rhythm and bloom with confidence!"
+                <p className="text-rose-700 italic text-base text-center min-h-[3.5rem] flex items-center justify-center">
+                  {inspiration ? `"${inspiration}"` : 'Loading inspiration…'}
                 </p>
               </div>
               {/* Recent Entries (half height) */}

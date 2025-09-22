@@ -185,7 +185,29 @@ app.delete('/api/entries/:date', async (req, res) => {
   }
 });
 
+// Serve a single inspiration message by id
+app.get('/api/inspiration/:id', async (req, res) => {
+  try {
+    const inspirationPath = path.join(DATA_DIR, 'inspiration.json');
+    const data = await fs.readFile(inspirationPath, 'utf8');
+    const messages = JSON.parse(data);
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isInteger(id) || id < 1) {
+      res.status(400).json({ error: 'Invalid id' });
+      return;
+    }
+    const found = Array.isArray(messages) ? messages.find((m) => m.id === id) : null;
+    if (found) {
+      res.json({ message: found.text, id: found.id });
+    } else {
+      res.status(404).json({ error: 'Message not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load inspiration messages' });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Joanna Tracker server running on http://localhost:${PORT}`);
+  console.log(`LunaTrack server running on http://localhost:${PORT}`);
 });
