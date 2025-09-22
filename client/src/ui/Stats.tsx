@@ -57,7 +57,7 @@ export function Stats({ data }: { data: AppEntries }) {
           <li>Average cycle length: <strong>{averageCycleLength} days</strong></li>
           {/* Next ovulation prediction: show date in dark blue bold (only if enabled) */}
           {enableOvulation && (
-            <li>Next Ovulation prediction: <strong className="text-blue-800 font-bold">{
+            <li>Next Ovulation prediction: <strong className="text-blue-600 font-bold">{
               (() => {
                 // Choose a prediction to base ovulation on: prefer nextDate if available, else last prediction
                 const base = nextDate || (predictions.length ? predictions[predictions.length - 1] : null)

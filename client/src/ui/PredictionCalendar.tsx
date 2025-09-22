@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 
 interface PredictionCalendarProps {
   year: number
@@ -9,6 +9,21 @@ interface PredictionCalendarProps {
 }
 
 export function PredictionCalendar({ year, month, predictions, averageCycleLength = 28, title }: PredictionCalendarProps) {
+  const [enableOvulation, setEnableOvulation] = useState<boolean>(true)
+
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/enable-ovulation')
+      .then(r => r.json())
+      .then((body) => {
+        if (!mounted) return
+        if (body && typeof body.enableOvulation === 'boolean') setEnableOvulation(!!body.enableOvulation)
+      }).catch(() => {
+        // keep default true on error
+      })
+    return () => { mounted = false }
+  }, [])
+
   const calendarData = useMemo(() => {
     const firstDay = new Date(Date.UTC(year, month, 1))
     const lastDay = new Date(Date.UTC(year, month + 1, 0))
@@ -98,7 +113,7 @@ export function PredictionCalendar({ year, month, predictions, averageCycleLengt
 
           return (
             <div key={i} className="relative h-5 overflow-hidden">
-              {fertileSpans.map((s, idx) => {
+              {enableOvulation && fertileSpans.map((s, idx) => {
                 const leftPct = (s.start / 7) * 100
                 // width stops at middle of last cell (+0.5) and add 5px so it doesn't stick out
                 const percentPart = ((s.end - s.start + 0.5) / 7) * 100
@@ -116,7 +131,7 @@ export function PredictionCalendar({ year, month, predictions, averageCycleLengt
                 {row.map((cell, j) => {
                   const predicted = predictions.includes(cell.date)
                   const fertility = getFertilityStatus(cell.date)
-                  const isOvulation = ovulationSet.has(cell.date)
+                  const isOvulation = enableOvulation && ovulationSet.has(cell.date)
                   let cellClass = 'relative z-10'
                   if (predicted) {
                     cellClass += ' bg-primary-500 text-white font-bold'
