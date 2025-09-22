@@ -119,14 +119,28 @@ export default function App() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-rose-900">{settings?.username || 'Joanna Tracker'}</h1>
-        <nav className="flex gap-2">
-          <button className={`btn btn-ghost ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
-          <button className={`btn btn-ghost ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
-          <button className={`btn btn-ghost ${tab==='history'?'bg-rose-200':''}`} onClick={() => setTab('history')}>History</button>
-          <button className={`btn btn-ghost ${tab==='settings'?'bg-rose-200':''}`} onClick={() => setTab('settings')}>Settings</button>
-        </nav>
+      <header className="mb-6">
+        {/* Mobile layout: stacked */}
+        <div className="flex flex-col sm:hidden">
+          <h1 className="text-2xl font-semibold text-rose-900 text-center mb-3">Joanna Tracker</h1>
+          <nav className="flex justify-between w-full">
+            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
+            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
+            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='history'?'bg-rose-200':''}`} onClick={() => setTab('history')}>History</button>
+            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='settings'?'bg-rose-200':''}`} onClick={() => setTab('settings')}>Settings</button>
+          </nav>
+        </div>
+        
+        {/* Desktop layout: side by side */}
+        <div className="hidden sm:flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-rose-900">Joanna Tracker</h1>
+          <nav className="flex gap-2">
+            <button className={`btn btn-ghost ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
+            <button className={`btn btn-ghost ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
+            <button className={`btn btn-ghost ${tab==='history'?'bg-rose-200':''}`} onClick={() => setTab('history')}>History</button>
+            <button className={`btn btn-ghost ${tab==='settings'?'bg-rose-200':''}`} onClick={() => setTab('settings')}>Settings</button>
+          </nav>
+        </div>
       </header>
 
       {/* Consistent content sizing for all tabs */}

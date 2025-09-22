@@ -35,9 +35,10 @@ export function Stats({ data }: { data: AppEntries }) {
         <ul className="space-y-1 text-rose-800">
           <li>Last period: <strong>{last ? formatDate(last) : '—'}</strong></li>
           <li>Days since last: <strong>{daysSinceLast ?? '—'}</strong></li>
-          <li>Next predicted: <strong>{nextDate ? formatDate(nextDate) : '—'}</strong> {typeof daysUntilNext === 'number' && (
-            <span className="text-rose-600">(in {daysUntilNext} days)</span>
-          )}</li>
+          <li>Next predicted date: <strong>{nextDate ? formatDate(nextDate) : '—'}</strong></li>
+          {typeof daysUntilNext === 'number' && (
+            <li>Number of days: <strong className="text-rose-600">{daysUntilNext} days</strong></li>
+          )}
           <li>Average cycle length: <strong>{averageCycleLength} days</strong></li>
         </ul>
       </div>
