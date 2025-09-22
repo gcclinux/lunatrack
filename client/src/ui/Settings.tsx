@@ -159,16 +159,16 @@ export function Settings({ settings, onSave }: {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-[32rem] flex flex-col space-y-6">
       <form className="card max-w-lg" onSubmit={submit}>
-        <h2 className="text-lg font-medium mb-3">Settings</h2>
+        <h2 className="text-lg font-medium mb-2">Settings</h2>
         
         <div className="grid grid-cols-2 gap-4 mb-3">
           <div>
             <label className="label">PIN / Pass</label>
             <input 
               type="password" 
-              className="input" 
+              className="input h-8" 
               value={form.pin} 
               onChange={e => {
                 const value = e.target.value.replace(/\D/g, '').slice(0, 6) // Only digits, max 6
@@ -196,17 +196,17 @@ export function Settings({ settings, onSave }: {
         </div>
 
         <label className="label">Default cycle length (days)</label>
-        <input type="number" min={15} max={120} className="input mb-4" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />
+  <input type="number" min={15} max={120} className="input mb-4 h-8" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />
 
         <div className="flex gap-2">
-          <button className="btn btn-primary" disabled={saving}>
+          <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
             {saving ? 'Saving…' : 'Save settings'}
           </button>
         </div>
       </form>
 
-      <div className="card max-w-lg">
-        <h2 className="text-lg font-medium mb-3">Backup & Restore</h2>
+      <div className="card max-w-lg pt-[0.8rem]">
+          <h2 className="text-lg font-medium mb-[0.1rem] mt-[0.1rem]">Backup & Restore</h2>
         <p className="text-sm text-rose-700 mb-4">
           Export your cycle data to save a backup, or import a previous backup to restore your data.
         </p>
@@ -214,7 +214,7 @@ export function Settings({ settings, onSave }: {
         <div className="space-y-3">
           <div>
             <button 
-              className="btn btn-primary w-full mb-2" 
+              className="btn btn-primary w-[97%] h-[1.94rem] mb-2" 
               onClick={exportData}
             >
               💾 Export Data
@@ -234,7 +234,7 @@ export function Settings({ settings, onSave }: {
               id="import-file"
             />
             <button 
-              className="btn btn-ghost w-full mb-2 border border-rose-300" 
+              className="btn btn-ghost w-[97%] h-[1.94rem] mb-2 border border-rose-300" 
               onClick={() => fileInputRef.current?.click()}
               disabled={importing}
             >

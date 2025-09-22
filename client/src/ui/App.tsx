@@ -170,7 +170,12 @@ export default function App() {
       <>
         <div className="min-h-[85vh] flex items-center justify-center text-rose-900">
           <div className="text-center">
-            <h1 className="text-3xl font-semibold mb-2">LunaTrack</h1>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="text-rose-400 drop-shadow-sm">
+                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9C21 10.1 20.1 11 19 11C17.9 11 17 10.1 17 9C17 7.9 17.9 7 19 7C20.1 7 21 7.9 21 9ZM7 9C7 10.1 6.1 11 5 11C3.9 11 3 10.1 3 9C3 7.9 3.9 7 5 7C6.1 7 7 7.9 7 9ZM14 12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12C10 10.9 10.9 10 12 10C13.1 10 14 10.9 14 12ZM18.5 16.5C18.5 17.6 17.6 18.5 16.5 18.5C15.4 18.5 14.5 17.6 14.5 16.5C14.5 15.4 15.4 14.5 16.5 14.5C17.6 14.5 18.5 15.4 18.5 16.5ZM9.5 16.5C9.5 17.6 8.6 18.5 7.5 18.5C6.4 18.5 5.5 17.6 5.5 16.5C5.5 15.4 6.4 14.5 7.5 14.5C8.6 14.5 9.5 15.4 9.5 16.5ZM12 22C13.1 22 14 21.1 14 20C14 18.9 13.1 18 12 18C10.9 18 10 18.9 10 20C10 21.1 10.9 22 12 22Z"/>
+              </svg>
+              <h1 className="text-3xl font-semibold">LunaTrack</h1>
+            </div>
             <p className="text-rose-700">Please enter your PIN to continue</p>
           </div>
         </div>
@@ -194,7 +199,12 @@ export default function App() {
       <header className="mb-6">
         {/* Mobile layout: stacked */}
         <div className="flex flex-col sm:hidden">
-          <h1 className="text-2xl font-semibold text-rose-900 text-center mb-3">LunaTrack</h1>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-rose-400 drop-shadow-sm">
+              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9C21 10.1 20.1 11 19 11C17.9 11 17 10.1 17 9C17 7.9 17.9 7 19 7C20.1 7 21 7.9 21 9ZM7 9C7 10.1 6.1 11 5 11C3.9 11 3 10.1 3 9C3 7.9 3.9 7 5 7C6.1 7 7 7.9 7 9ZM14 12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12C10 10.9 10.9 10 12 10C13.1 10 14 10.9 14 12ZM18.5 16.5C18.5 17.6 17.6 18.5 16.5 18.5C15.4 18.5 14.5 17.6 14.5 16.5C14.5 15.4 15.4 14.5 16.5 14.5C17.6 14.5 18.5 15.4 18.5 16.5ZM9.5 16.5C9.5 17.6 8.6 18.5 7.5 18.5C6.4 18.5 5.5 17.6 5.5 16.5C5.5 15.4 6.4 14.5 7.5 14.5C8.6 14.5 9.5 15.4 9.5 16.5ZM12 22C13.1 22 14 21.1 14 20C14 18.9 13.1 18 12 18C10.9 18 10 18.9 10 20C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <h1 className="text-2xl font-semibold text-rose-900 text-center">LunaTrack</h1>
+          </div>
           <nav className="flex justify-between w-full">
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
@@ -205,7 +215,12 @@ export default function App() {
         
         {/* Desktop layout: side by side */}
         <div className="hidden sm:flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-rose-900">LunaTrack</h1>
+          <div className="flex items-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-rose-400 drop-shadow-sm">
+              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9C21 10.1 20.1 11 19 11C17.9 11 17 10.1 17 9C17 7.9 17.9 7 19 7C20.1 7 21 7.9 21 9ZM7 9C7 10.1 6.1 11 5 11C3.9 11 3 10.1 3 9C3 7.9 3.9 7 5 7C6.1 7 7 7.9 7 9ZM14 12C14 13.1 13.1 14 12 14C10.9 14 10 13.1 10 12C10 10.9 10.9 10 12 10C13.1 10 14 10.9 14 12ZM18.5 16.5C18.5 17.6 17.6 18.5 16.5 18.5C15.4 18.5 14.5 17.6 14.5 16.5C14.5 15.4 15.4 14.5 16.5 14.5C17.6 14.5 18.5 15.4 18.5 16.5ZM9.5 16.5C9.5 17.6 8.6 18.5 7.5 18.5C6.4 18.5 5.5 17.6 5.5 16.5C5.5 15.4 6.4 14.5 7.5 14.5C8.6 14.5 9.5 15.4 9.5 16.5ZM12 22C13.1 22 14 21.1 14 20C14 18.9 13.1 18 12 18C10.9 18 10 18.9 10 20C10 21.1 10.9 22 12 22Z"/>
+            </svg>
+            <h1 className="text-2xl font-semibold text-rose-900">LunaTrack</h1>
+          </div>
           <nav className="flex gap-2">
             <button className={`btn btn-ghost ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
             <button className={`btn btn-ghost ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
