@@ -40,6 +40,10 @@ const SettingsSchema = z.object({
   defaultCycleLength: z.number().int().positive().max(120).default(28),
   fileProtected: z.boolean().default(false)
 });
+// Add enableOvulation default (if missing in file, readSettings will fill in)
+const ExtendedSettingsSchema = SettingsSchema.extend({
+  enableOvulation: z.boolean().default(true)
+});
 // API: Get fileProtected status
 app.get('/api/file-protected', async (_req, res) => {
   try {
@@ -73,20 +77,20 @@ function sortDatesAsc(dates: string[]): string[] {
   return [...dates].sort((a, b) => a.localeCompare(b));
 }
 
-async function readSettings(): Promise<z.infer<typeof SettingsSchema>> {
+async function readSettings(): Promise<z.infer<typeof ExtendedSettingsSchema>> {
   const settingsPath = path.join(DATA_DIR, 'settings.json');
   if (!(await pathExists(settingsPath))) {
-    const defaults = SettingsSchema.parse({});
+    const defaults = ExtendedSettingsSchema.parse({});
     await writeJson(settingsPath, defaults, { spaces: 2 });
     return defaults;
   }
   const raw = await readJson(settingsPath);
   // tolerate partial/older schemas
-  return SettingsSchema.parse(raw);
+  return ExtendedSettingsSchema.parse(raw);
 }
 
 async function writeSettings(s: unknown) {
-  const parsed = SettingsSchema.parse(s);
+  const parsed = ExtendedSettingsSchema.parse(s);
   const settingsPath = path.join(DATA_DIR, 'settings.json');
   await writeJson(settingsPath, parsed, { spaces: 2 });
   return parsed;
@@ -158,6 +162,35 @@ app.put('/api/settings', async (req, res) => {
   try {
     const updated = await writeSettings(req.body);
     res.json(updated);
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// GET enableOvulation
+app.get('/api/enable-ovulation', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    // If missing, default to true
+    res.json({ enableOvulation: !!(s as any).enableOvulation });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT enableOvulation
+app.put('/api/enable-ovulation', async (req, res) => {
+  try {
+    const { enableOvulation } = req.body;
+    if (typeof enableOvulation !== 'boolean') {
+      return res.status(400).json({ error: 'enableOvulation must be boolean' });
+    }
+    const s = await readSettings();
+    const updated = { ...s, enableOvulation };
+    // Write using existing writeSettings which uses SettingsSchema; ensure extended schema applies
+    const parsed = ExtendedSettingsSchema.parse(updated);
+    await writeSettings(parsed);
+    res.json({ enableOvulation });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }

@@ -59,7 +59,9 @@ Root helper (optional):
 - `GET /api/settings` — Get current app settings.
 - `PUT /api/settings` — Update app settings. Expects JSON body matching settings schema.
 - `GET /api/file-protected` — returns { fileProtected: true|false }
-- `PUT /api/file-protected` — set fileProtected by sending { fileProtected: true|false } in the body
+- `PUT /api/file-protected` — set fileProtected by sending { fileProtected: true|false }
+- `GET /api/enable-ovulation` — returns { enableOvulation: true|false }.
+- `PUT /api/enable-ovulation` — accepts { enableOvulation: true|false }
 
 ### Entries
 - `GET /api/entries` — Get all period entries and stats (cycle length, predictions, etc).

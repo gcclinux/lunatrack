@@ -1,9 +1,24 @@
 import type { AppEntries } from '../utils/types'
 import { formatDate } from '../utils/dateUtils'
+import { useEffect, useState } from 'react'
 import { PredictionCalendar } from './PredictionCalendar'
 
 export function Stats({ data }: { data: AppEntries }) {
   const { averageCycleLength, predictions, last, daysSinceLast, nextDate, daysUntilNext } = data
+  const [enableOvulation, setEnableOvulation] = useState<boolean>(true)
+
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/enable-ovulation')
+      .then(r => r.json())
+      .then((body) => {
+        if (!mounted) return
+        if (body && typeof body.enableOvulation === 'boolean') setEnableOvulation(!!body.enableOvulation)
+      }).catch(() => {
+        // ignore — keep default true
+      })
+    return () => { mounted = false }
+  }, [])
 
   // Get current date and calculate next 3 months
   const today = new Date()
@@ -40,21 +55,23 @@ export function Stats({ data }: { data: AppEntries }) {
             <li>Number of days: <strong className="text-rose-600">{daysUntilNext} days</strong></li>
           )}
           <li>Average cycle length: <strong>{averageCycleLength} days</strong></li>
-          {/* Next ovulation prediction: show date in dark blue bold */}
-          <li>Next Ovulation prediction: <strong className="text-blue-800 font-bold">{
-            (() => {
-              // Choose a prediction to base ovulation on: prefer nextDate if available, else last prediction
-              const base = nextDate || (predictions.length ? predictions[predictions.length - 1] : null)
-              if (!base) return '—'
-              const [y, m, d] = base.split('-').map(Number)
-              const start = new Date(Date.UTC(y, m - 1, d))
-              const ov = new Date(start)
-              ov.setUTCDate(start.getUTCDate() + averageCycleLength - 14)
-              // Format without year, e.g. "Mon 20 Oct" (strip commas introduced by some locales)
-              const short = new Date(ov.toISOString().slice(0,10)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
-              return short.replace(/,/g, '')
-            })()
-          }</strong></li>
+          {/* Next ovulation prediction: show date in dark blue bold (only if enabled) */}
+          {enableOvulation && (
+            <li>Next Ovulation prediction: <strong className="text-blue-800 font-bold">{
+              (() => {
+                // Choose a prediction to base ovulation on: prefer nextDate if available, else last prediction
+                const base = nextDate || (predictions.length ? predictions[predictions.length - 1] : null)
+                if (!base) return '—'
+                const [y, m, d] = base.split('-').map(Number)
+                const start = new Date(Date.UTC(y, m - 1, d))
+                const ov = new Date(start)
+                ov.setUTCDate(start.getUTCDate() + averageCycleLength - 14)
+                // Format without year, e.g. "Mon 20 Oct" (strip commas introduced by some locales)
+                const short = new Date(ov.toISOString().slice(0,10)).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+                return short.replace(/,/g, '')
+              })()
+            }</strong></li>
+          )}
         </ul>
       </div>
 
