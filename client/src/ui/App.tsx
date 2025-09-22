@@ -118,7 +118,7 @@ export default function App() {
                       }
                     }
                     return (
-                      <li key={d} className="flex items-center">
+                      <li key={d} className={`flex items-center ${i % 2 === 0 ? 'bg-rose-50' : 'bg-rose-100'}`}>
                         <span className="w-48">{formatDate(d)}</span>
                         <span className="flex-1" />
                         <span className="w-32 text-right">{cycle}</span>
