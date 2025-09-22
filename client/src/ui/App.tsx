@@ -3,6 +3,7 @@ import { Calendar } from './Calendar'
 import { Stats } from './Stats'
 import { Settings } from './Settings'
 import { History } from './History'
+import { ConfirmDialog } from './ConfirmDialog'
 import { api } from '../utils/api'
 import { formatDate } from '../utils/dateUtils'
 import type { AppEntries, Settings as SettingsType } from '../utils/types'
@@ -13,6 +14,19 @@ export default function App() {
   const [entries, setEntries] = useState<AppEntries | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    date?: string
+    action?: 'add' | 'remove'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  })
 
   useEffect(() => {
     (async () => {
@@ -33,16 +47,54 @@ export default function App() {
 
   async function toggleDate(date: string) {
     if (!entries) return
+    
+    const exists = entries.entries.includes(date)
+    
+    if (!exists) {
+      // Adding a new entry - show confirmation
+      const lastEntry = entries.last
+      let message = `Add this date as a period start?`
+      
+      if (lastEntry) {
+        const daysSince = Math.abs(
+          Math.round((new Date(date).getTime() - new Date(lastEntry).getTime()) / (1000 * 60 * 60 * 24))
+        )
+        message = `Last entry ${formatDate(lastEntry)}\nThis would be ${daysSince} days since your last entry`
+      }
+      
+      setConfirmDialog({
+        isOpen: true,
+        title: formatDate(date),
+        message,
+        onConfirm: () => performToggle(date, exists),
+        date,
+        action: 'add'
+      })
+    } else {
+      // Removing an entry - show confirmation
+      setConfirmDialog({
+        isOpen: true,
+        title: formatDate(date),
+        message: `Remove this date from your period tracking?`,
+        onConfirm: () => performToggle(date, exists),
+        date,
+        action: 'remove'
+      })
+    }
+  }
+
+  async function performToggle(date: string, exists: boolean) {
     try {
       setError(null)
-      const exists = entries.entries.includes(date)
       const updated = exists ? await api.deleteEntry(date) : await api.addEntry(date)
       setEntries((prev: AppEntries | null) => prev ? { ...prev, entries: updated.entries } : prev)
       // refresh stats after mutation
       const e = await api.getEntries()
       setEntries(e)
+      setConfirmDialog(prev => ({ ...prev, isOpen: false }))
     } catch (e: any) {
       setError(e.message || 'Error updating entry')
+      setConfirmDialog(prev => ({ ...prev, isOpen: false }))
     }
   }
 
@@ -148,6 +200,16 @@ export default function App() {
       <footer className="mt-8 text-center text-sm text-rose-600">
         Your data is stored locally in JSON files. No cloud, no ads.
       </footer>
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.action === 'add' ? 'Add Entry' : 'Remove Entry'}
+        cancelText="Cancel"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }
