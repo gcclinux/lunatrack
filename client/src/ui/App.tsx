@@ -161,7 +161,7 @@ export default function App() {
       <>
         <div className="min-h-[85vh] flex items-center justify-center text-rose-900">
           <div className="text-center">
-            <h1 className="text-3xl font-semibold mb-2">Joanna Tracker</h1>
+            <h1 className="text-3xl font-semibold mb-2">LunaTrack</h1>
             <p className="text-rose-700">Please enter your PIN to continue</p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function App() {
       <header className="mb-6">
         {/* Mobile layout: stacked */}
         <div className="flex flex-col sm:hidden">
-          <h1 className="text-2xl font-semibold text-rose-900 text-center mb-3">Joanna Tracker</h1>
+          <h1 className="text-2xl font-semibold text-rose-900 text-center mb-3">LunaTrack</h1>
           <nav className="flex justify-between w-full">
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
@@ -196,7 +196,7 @@ export default function App() {
         
         {/* Desktop layout: side by side */}
         <div className="hidden sm:flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-rose-900">Joanna Tracker</h1>
+          <h1 className="text-2xl font-semibold text-rose-900">LunaTrack</h1>
           <nav className="flex gap-2">
             <button className={`btn btn-ghost ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
             <button className={`btn btn-ghost ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
@@ -210,6 +210,68 @@ export default function App() {
       <div className="min-h-[32rem] flex flex-col">
         {tab === 'track' && (
           <div className="grid md:grid-cols-2 gap-4 flex-1">
+            <div className="flex flex-col h-full gap-4">
+              {/* Inspiring Message of the Day */}
+              <div className="card flex-shrink-0">
+                <h2 className="text-lg font-medium mb-2">Inspiration</h2>
+                <p className="text-rose-700 italic text-base text-center">
+                  "Every cycle is a new beginning. Embrace your rhythm and bloom with confidence!"
+                </p>
+              </div>
+              {/* Recent Entries (half height) */}
+              <div className="card flex-1 min-h-0 overflow-y-auto">
+                <h2 className="text-lg font-medium mb-2">Recent entries</h2>
+                <ul className="space-y-2.5">
+                  <li className="flex items-center font-semibold text-rose-700">
+                    <span className="w-48">Date</span>
+                    <span className="flex-1" />
+                    <span className="w-32 text-right">Cycle length</span>
+                  </li>
+                  {(() => {
+                    // Get up to 12 most recent entries from the API (already sorted desc)
+                    const allRecent = entries?.entries.slice().reverse().slice(0, 12) || [];
+                    // Show only the last 8 for display
+                    const displayRecent = allRecent.slice(0, 8);
+                    // If API provides cycle lengths, use them. Assume entries.cycleLengths is an array aligned with entries.entries (oldest to newest)
+                    // If not, fallback to local calculation
+                    const apiCycles = (entries as any)?.cycleLengths;
+                    return displayRecent.map((d: string, i: number) => {
+                      let cycle = '';
+                      // Find the index in allRecent (up to 12 entries)
+                      const idxInAll = allRecent.indexOf(d);
+                      const nextInAll = allRecent[idxInAll + 1];
+                      if (apiCycles && Array.isArray(apiCycles) && entries) {
+                        // Find the index in the full (reversed) list
+                        const idx = entries.entries.length - 1 - entries.entries.indexOf(d);
+                        if (idx + 1 < entries.entries.length && idx < apiCycles.length && idx >= 0) {
+                          // Use API cycle length if available
+                          const days = apiCycles[idx];
+                          cycle = days > 0 ? days + ' days' : '';
+                        } else {
+                          cycle = '—';
+                        }
+                      } else if (nextInAll) {
+                        // fallback: local calculation using next entry in allRecent (even if not displayed)
+                        const days = Math.abs(
+                          Math.round((new Date(d).getTime() - new Date(nextInAll).getTime()) / (1000 * 60 * 60 * 24))
+                        );
+                        cycle = days > 0 ? days + ' days' : '';
+                      } else {
+                        cycle = '—';
+                      }
+                      return (
+                        <li key={d} className={`flex items-center ${i % 2 === 0 ? 'bg-rose-50' : 'bg-rose-100'}`}>
+                          <span className="w-48">{formatDate(d)}</span>
+                          <span className="flex-1" />
+                          <span className="w-32 text-right">{cycle}</span>
+                        </li>
+                      );
+                    });
+                  })()}
+                  {entries?.entries.length === 0 && <li className="text-rose-600">No entries yet. Click a date on the calendar to add your last period start.</li>}
+                </ul>
+              </div>
+            </div>
             <div className="card">
               <h2 className="text-lg font-medium mb-2">Calendar</h2>
               <Calendar
@@ -217,46 +279,6 @@ export default function App() {
                 onToggleDate={toggleDate}
                 today={today}
               />
-            </div>
-            <div className="card">
-              <h2 className="text-lg font-medium mb-2">Recent entries</h2>
-              <ul className="space-y-2.5">
-                <li className="flex items-center font-semibold text-rose-700">
-                  <span className="w-48">Date</span>
-                  <span className="flex-1" />
-                  <span className="w-32 text-right">Cycle length</span>
-                </li>
-                {(() => {
-                  const recent = entries?.entries.slice().reverse().slice(0, 12) || [];
-                  return recent.map((d: string, i: number) => {
-                    let cycle = '';
-                    if (i < recent.length - 1) {
-                      const prev = recent[i + 1];
-                      const days = Math.abs(
-                        Math.round((new Date(d).getTime() - new Date(prev).getTime()) / (1000 * 60 * 60 * 24))
-                      );
-                      cycle = days > 0 ? days + ' days' : '';
-                    } else if (recent.length > 1 && entries) {
-                      // For the last entry, show the gap to the next entry in the full list if available
-                      const next = entries.entries.slice().reverse()[12];
-                      if (next) {
-                        const days = Math.abs(
-                          Math.round((new Date(d).getTime() - new Date(next).getTime()) / (1000 * 60 * 60 * 24))
-                        );
-                        cycle = days > 0 ? days + ' days' : '';
-                      }
-                    }
-                    return (
-                      <li key={d} className={`flex items-center ${i % 2 === 0 ? 'bg-rose-50' : 'bg-rose-100'}`}>
-                        <span className="w-48">{formatDate(d)}</span>
-                        <span className="flex-1" />
-                        <span className="w-32 text-right">{cycle}</span>
-                      </li>
-                    );
-                  });
-                })()}
-                {entries?.entries.length === 0 && <li className="text-rose-600">No entries yet. Click a date on the calendar to add your last period start.</li>}
-              </ul>
             </div>
           </div>
         )}
