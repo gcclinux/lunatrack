@@ -159,7 +159,7 @@ export default function App() {
   if (showPinDialog && settings?.pinEnabled && settings?.pin) {
     return (
       <>
-        <div className="min-h-screen flex items-center justify-center text-rose-900">
+        <div className="min-h-[85vh] flex items-center justify-center text-rose-900">
           <div className="text-center">
             <h1 className="text-3xl font-semibold mb-2">Joanna Tracker</h1>
             <p className="text-rose-700">Please enter your PIN to continue</p>

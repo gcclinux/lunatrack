@@ -67,7 +67,7 @@ export function PinEntryDialog({ isOpen, onSuccess, onCancel, expectedPin }: Pin
 
   return (
   <div className="fixed inset-0 bg-white backdrop-blur-sm flex items-start justify-center z-10 p-0 pt-[5vh]">
-      <div className="bg-gradient-to-br from-rose-50 to-rose-100 rounded-2xl shadow-2xl border border-rose-200 max-w-sm w-full mx-4 overflow-hidden relative">
+      <div className="bg-gradient-to-br from-rose-50 to-rose-100 rounded-2xl shadow-2xl border border-rose-200 max-w-sm w-full mx-2 overflow-auto relative">
         {/* Flower decoration */}
         <div className="absolute top-4 right-4 text-rose-300 opacity-60">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" className="drop-shadow-sm">
