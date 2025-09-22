@@ -31,7 +31,7 @@ export function Stats({ data }: { data: AppEntries }) {
     <div className="grid md:grid-cols-2 gap-4">
       {/* Current cycle - top left */}
       <div className="card">
-        <h2 className="text-lg font-medium mb-2">Current cycle</h2>
+        <h2 className="text-lg font-medium mb-2">Current cycle (Prediction)</h2>
         <ul className="space-y-1 text-rose-800">
           <li>Last period: <strong>{last ? formatDate(last) : '—'}</strong></li>
           <li>Days since last: <strong>{daysSinceLast ?? '—'}</strong></li>
@@ -53,6 +53,7 @@ export function Stats({ data }: { data: AppEntries }) {
             year={months[0].year}
             month={months[0].month}
             predictions={getMonthPredictions(months[0].year, months[0].month)}
+            averageCycleLength={averageCycleLength}
           />
         )}
       </div>
@@ -67,6 +68,7 @@ export function Stats({ data }: { data: AppEntries }) {
             year={months[1].year}
             month={months[1].month}
             predictions={getMonthPredictions(months[1].year, months[1].month)}
+            averageCycleLength={averageCycleLength}
           />
         )}
       </div>
@@ -81,6 +83,7 @@ export function Stats({ data }: { data: AppEntries }) {
             year={months[2].year}
             month={months[2].month}
             predictions={getMonthPredictions(months[2].year, months[2].month)}
+            averageCycleLength={averageCycleLength}
           />
         )}
       </div>

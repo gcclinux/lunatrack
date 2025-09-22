@@ -44,7 +44,7 @@ export default function App() {
       .then(data => setInspiration(data.message))
       .catch(() => setInspiration(null));
   }, []);
-  const [tab, setTab] = useState<'track' | 'stats' | 'history' | 'settings'>('track')
+  const [tab, setTab] = useState<'track' | 'prediction' | 'history' | 'settings'>('track')
   const [fileProtected, setFileProtected] = useState<boolean | null>(null)
   // Check fileProtected status on load/refresh
   useEffect(() => {
@@ -261,7 +261,7 @@ export default function App() {
           </div>
           <nav className="flex justify-between w-full">
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
-            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
+            <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='prediction'?'bg-rose-200':''}`} onClick={() => setTab('prediction')}>Prediction</button>
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='history'?'bg-rose-200':''}`} onClick={() => setTab('history')}>History</button>
             <button className={`btn btn-ghost flex-1 mx-0.5 ${tab==='settings'?'bg-rose-200':''}`} onClick={() => setTab('settings')}>Settings</button>
           </nav>
@@ -277,7 +277,7 @@ export default function App() {
           </div>
           <nav className="flex gap-2">
             <button className={`btn btn-ghost ${tab==='track'?'bg-rose-200':''}`} onClick={() => setTab('track')}>Track</button>
-            <button className={`btn btn-ghost ${tab==='stats'?'bg-rose-200':''}`} onClick={() => setTab('stats')}>Stats</button>
+            <button className={`btn btn-ghost ${tab==='prediction'?'bg-rose-200':''}`} onClick={() => setTab('prediction')}>Prediction</button>
             <button className={`btn btn-ghost ${tab==='history'?'bg-rose-200':''}`} onClick={() => setTab('history')}>History</button>
             <button className={`btn btn-ghost ${tab==='settings'?'bg-rose-200':''}`} onClick={() => setTab('settings')}>Settings</button>
           </nav>
@@ -361,7 +361,7 @@ export default function App() {
           </div>
         )}
 
-        {tab === 'stats' && entries && (
+        {tab === 'prediction' && entries && (
           <div className="flex-1"><Stats data={entries} /></div>
         )}
 
