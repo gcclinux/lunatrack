@@ -22,8 +22,8 @@ export function History({ entries, onToggleDate, today }: HistoryProps) {
         ) : (
           <div className="max-h-[24rem] overflow-y-auto pr-1">
             <ul className="space-y-1">
-              {sorted.map((date: string) => (
-                <li key={date} className="flex items-center justify-between py-2">
+              {sorted.map((date: string, i: number) => (
+                <li key={date} className={`flex items-center justify-between py-2 ${i % 2 === 0 ? 'bg-rose-50' : 'bg-rose-100'}`}>
                   <span className="text-rose-900">{formatDate(date)}</span>
                   <button className="btn btn-ghost text-rose-700" onClick={() => onToggleDate(date)}>remove</button>
                 </li>
