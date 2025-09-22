@@ -177,5 +177,5 @@ app.delete('/api/entries/:date', async (req, res) => {
 });
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Joanna Tracker server running on http://localhost:${PORT}`);
+    console.log(`LunaTrack Tracker server running on http://localhost:${PORT}`);
 });

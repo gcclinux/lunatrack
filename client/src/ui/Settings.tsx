@@ -111,7 +111,7 @@ export function Settings({ settings, onSave }: {
       // Create download link
       const link = document.createElement('a')
       link.href = url
-      link.download = `joanna-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`
+  link.download = `lunatrack-backup-${new Date().toISOString().slice(0, 10)}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -159,94 +159,107 @@ export function Settings({ settings, onSave }: {
   }
 
   return (
-    <div className="min-h-[32rem] flex flex-col space-y-6">
-      <form className="card max-w-lg" onSubmit={submit}>
-        <h2 className="text-lg font-medium mb-2">Settings</h2>
-        
-        <div className="grid grid-cols-2 gap-4 mb-3">
-          <div>
-            <label className="label">PIN / Pass</label>
-            <input 
-              type="password" 
-              className="input h-8" 
-              value={form.pin} 
-              onChange={e => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 6) // Only digits, max 6
-                setForm({ ...form, pin: value })
-              }}
-              placeholder="4-6 digits"
-              maxLength={6}
-              pattern="[0-9]{4,6}"
-            />
-          </div>
-          <div className="flex flex-col">
-            <label className="label">Enabled</label>
-            <div className="flex items-center h-10">
+    <div className="min-h-[32rem] grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Left column: Settings and Backup & Restore stacked */}
+      <div className="md:col-span-2 flex flex-col gap-6">
+        <form className="card max-w-lg" onSubmit={submit}>
+          <h2 className="text-lg font-medium mb-2">Settings</h2>
+          <div className="grid grid-cols-2 gap-4 mb-3">
+            <div>
+              <label className="label">PIN / Pass</label>
               <input 
-                type="checkbox" 
-                className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2" 
-                checked={form.pinEnabled}
-                onChange={e => setForm({ ...form, pinEnabled: e.target.checked })}
+                type="password" 
+                className="input h-8" 
+                value={form.pin} 
+                onChange={e => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6) // Only digits, max 6
+                  setForm({ ...form, pin: value })
+                }}
+                placeholder="4-6 digits"
+                maxLength={6}
+                pattern="[0-9]{4,6}"
               />
-              <span className="ml-2 text-sm text-rose-700">
-                {form.pinEnabled ? 'Enabled' : 'Disabled'}
-              </span>
+            </div>
+            <div className="flex flex-col">
+              <label className="label">Enabled</label>
+              <div className="flex items-center h-10">
+                <input 
+                  type="checkbox" 
+                  className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2" 
+                  checked={form.pinEnabled}
+                  onChange={e => setForm({ ...form, pinEnabled: e.target.checked })}
+                />
+                <span className="ml-2 text-sm text-rose-700">
+                  {form.pinEnabled ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <label className="label">Default cycle length (days)</label>
+          <input type="number" min={15} max={120} className="input mb-4 h-8" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />
+          <div className="flex gap-2">
+            <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
+              {saving ? 'Saving…' : 'Save settings'}
+            </button>
+          </div>
+        </form>
+
+        <div className="card max-w-lg pt-[0.8rem]">
+          <h2 className="text-lg font-medium mb-[0.1rem] mt-[0.1rem]">Backup & Restore</h2>
+          <p className="text-sm text-rose-700 mb-4">
+            Export your cycle data to save a backup, or import a previous backup to restore your data.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <button 
+                className="btn btn-primary w-[97%] h-[1.94rem] mb-2" 
+                onClick={exportData}
+              >
+                💾 Export Data
+              </button>
+              <p className="text-xs text-rose-600">
+                Download your cycle data as a backup file
+              </p>
+            </div>
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={importData}
+                className="hidden"
+                id="import-file"
+              />
+              <button 
+                className="btn btn-ghost w-[97%] h-[1.94rem] mb-2 border border-rose-300" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+              >
+                {importing ? '📥 Importing...' : '📥 Import Data'}
+              </button>
+              <p className="text-xs text-rose-600">
+                Restore cycle data from a backup file
+              </p>
             </div>
           </div>
         </div>
-
-        <label className="label">Default cycle length (days)</label>
-  <input type="number" min={15} max={120} className="input mb-4 h-8" value={form.defaultCycleLength} onChange={e => setForm({ ...form, defaultCycleLength: Number(e.target.value) || 28 })} />
-
-        <div className="flex gap-2">
-          <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
-            {saving ? 'Saving…' : 'Save settings'}
-          </button>
-        </div>
-      </form>
-
-      <div className="card max-w-lg pt-[0.8rem]">
-          <h2 className="text-lg font-medium mb-[0.1rem] mt-[0.1rem]">Backup & Restore</h2>
-        <p className="text-sm text-rose-700 mb-4">
-          Export your cycle data to save a backup, or import a previous backup to restore your data.
+      </div>
+      {/* Right column: About panel */}
+      <div className="card h-full flex flex-col max-w-lg">
+        <h2 className="text-lg font-medium mb-2">About</h2>
+        <p className="text-rose-700 text-sm mb-2">
+          <span className="font-semibold">LunaTrack</span> helps you track your cycles, moods, and more with privacy and ease.
         </p>
-        
-        <div className="space-y-3">
-          <div>
-            <button 
-              className="btn btn-primary w-[97%] h-[1.94rem] mb-2" 
-              onClick={exportData}
-            >
-              💾 Export Data
-            </button>
-            <p className="text-xs text-rose-600">
-              Download your cycle data as a backup file
-            </p>
-          </div>
-
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={importData}
-              className="hidden"
-              id="import-file"
-            />
-            <button 
-              className="btn btn-ghost w-[97%] h-[1.94rem] mb-2 border border-rose-300" 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
-            >
-              {importing ? '📥 Importing...' : '📥 Import Data'}
-            </button>
-            <p className="text-xs text-rose-600">
-              Restore cycle data from a backup file
-            </p>
-          </div>
+        <ul className="text-rose-700 text-sm list-disc pl-5 mb-2">
+          <li>All data is stored locally by default</li>
+          <li>Backup & restore for peace of mind</li>
+          <li>PIN protection for privacy</li>
+        </ul>
+        <div className="mt-auto pt-4 text-xs text-rose-400">
+          <div>Version 1.0.0</div>
+          <div>© {new Date().getFullYear()} LunaTrack</div>
         </div>
       </div>
-
       <NotificationDialog
         isOpen={notification.isOpen}
         title={notification.title}
