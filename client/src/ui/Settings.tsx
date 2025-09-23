@@ -204,7 +204,7 @@ export function Settings({ settings, onSave }: {
           </div>
           <div className="grid grid-cols-2 gap-4 items-end mb-4">
             <div>
-              <label className="label">Default cycle length (days)</label>
+              <label className="label">Default cycle (days)</label>
               <input
                 type="number"
                 min={15}
