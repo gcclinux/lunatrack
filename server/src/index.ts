@@ -353,6 +353,48 @@ app.get('/api/inspiration/:id', async (req, res) => {
   }
 });
 
+// GET full backup (settings + entries)
+app.get('/api/backup', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    const entries = await readEntries(s.dataFile);
+    res.json({ settings: s, entries });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST restore backup (settings + entries)
+app.post('/api/restore', async (req, res) => {
+  try {
+    const body = req.body;
+    if (!body || typeof body !== 'object') return res.status(400).json({ error: 'Invalid backup payload' });
+    const { settings: newSettings, entries } = body as { settings: unknown; entries: unknown };
+    if (!newSettings) return res.status(400).json({ error: 'Missing settings in backup' });
+    if (!Array.isArray(entries)) return res.status(400).json({ error: 'Missing entries array in backup' });
+
+    // validate settings and entries
+    const parsedSettings = ExtendedSettingsSchema.parse(newSettings);
+    // validate each entry date
+    const validEntries: string[] = [];
+    for (const d of entries) {
+      if (typeof d !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        return res.status(400).json({ error: `Invalid entry date format: ${String(d)}` });
+      }
+      validEntries.push(d);
+    }
+
+    // write settings first
+    await writeSettings(parsedSettings);
+    // write entries to the dataFile defined in settings
+    await writeEntries(parsedSettings.dataFile, sortDatesAsc(Array.from(new Set(validEntries))));
+
+    res.json({ ok: true });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 // The app is exported and started from a separate start script which reads
 // ports and SSL config from data/settings.json.
 export default app;

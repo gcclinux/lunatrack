@@ -165,15 +165,16 @@ export function Settings({ settings, onSave }: {
 
   async function exportData() {
     try {
-      // Get current data from API
-      const response = await fetch('/api/entries')
+      // Get full backup (settings + entries)
+      const response = await fetch('/api/backup')
+      if (!response.ok) throw new Error('Failed to fetch backup')
       const data = await response.json()
-      
+
       // Create downloadable file
       const dataStr = JSON.stringify(data, null, 2)
       const dataBlob = new Blob([dataStr], { type: 'application/json' })
       const url = URL.createObjectURL(dataBlob)
-      
+
       // Create download link
       const link = document.createElement('a')
       link.href = url
@@ -204,22 +205,24 @@ export function Settings({ settings, onSave }: {
     try {
       const text = await file.text()
       const data = JSON.parse(text)
-      
-      // Validate the data structure
-      if (!data.entries || !Array.isArray(data.entries)) {
+
+      // Validate the data structure: expect { settings, entries }
+      if (!data || !data.settings || !Array.isArray(data.entries)) {
         throw new Error('Invalid backup file format')
       }
 
-      // Import each entry
-      for (const entry of data.entries) {
-        await fetch('/api/entries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: entry })
-        })
+      // POST restore to server which will write settings.json and entries file
+      const resp = await fetch('/api/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => null)
+        throw new Error(err?.error || 'Restore failed')
       }
 
-      showNotification('Import Successful', `Successfully imported ${data.entries.length} entries!`, 'success', true)
+      showNotification('Import Successful', `Backup restored successfully!`, 'success', true)
       // Note: Page will refresh when user clicks OK in the notification dialog
     } catch (error) {
       showNotification('Import Failed', 'Failed to import data. Please check the file format and try again.', 'error')
