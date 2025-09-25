@@ -33,16 +33,73 @@ async function writeJson(p: string, data: unknown, opts?: { spaces?: number }) {
 }
 
 // Schemas
+const SSLSchema = z.object({
+  certFile: z.string().min(1),
+  keyFile: z.string().min(1)
+});
 const SettingsSchema = z.object({
   pin: z.string().default(''),
   pinEnabled: z.boolean().default(false),
   dataFile: z.string().min(1).default('cycles.json'),
   defaultCycleLength: z.number().int().positive().max(120).default(28),
-  fileProtected: z.boolean().default(false)
+  fileProtected: z.boolean().default(false),
+  SSL: SSLSchema.optional(),
+  httpPort: z.number().int().default(5173),
+  httpsPort: z.number().int().default(7379)
+});
+// GET ports
+app.get('/api/ports', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    res.json({ httpPort: s.httpPort, httpsPort: s.httpsPort });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT ports
+app.put('/api/ports', async (req, res) => {
+  try {
+    const { httpPort, httpsPort } = req.body;
+    if (typeof httpPort !== 'number' || typeof httpsPort !== 'number') {
+      return res.status(400).json({ error: 'httpPort and httpsPort must be numbers' });
+    }
+    const s = await readSettings();
+    const updated = { ...s, httpPort, httpsPort };
+    await writeSettings(updated);
+    res.json({ httpPort, httpsPort });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
 });
 // Add enableOvulation default (if missing in file, readSettings will fill in)
 const ExtendedSettingsSchema = SettingsSchema.extend({
   enableOvulation: z.boolean().default(true)
+});
+// GET SSL config
+app.get('/api/ssl', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    res.json({ SSL: s.SSL ?? null });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT SSL config
+app.put('/api/ssl', async (req, res) => {
+  try {
+    const { certFile, keyFile } = req.body;
+    if (typeof certFile !== 'string' || typeof keyFile !== 'string') {
+      return res.status(400).json({ error: 'certFile and keyFile must be strings' });
+    }
+    const s = await readSettings();
+    const updated = { ...s, SSL: { certFile, keyFile } };
+    await writeSettings(updated);
+    res.json({ SSL: updated.SSL });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
 });
 // API: Get fileProtected status
 app.get('/api/file-protected', async (_req, res) => {

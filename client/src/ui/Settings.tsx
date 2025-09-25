@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { Settings as SettingsType } from '../utils/types'
 
 interface NotificationDialogProps {
@@ -66,6 +66,24 @@ export function Settings({ settings, onSave }: {
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // SSL cert/key state
+  const [certFile, setCertFile] = useState('');
+  const [keyFile, setKeyFile] = useState('');
+  const [sslLoading, setSslLoading] = useState(false);
+
+  // Fetch SSL config on mount
+  useEffect(() => {
+    fetch('/api/ssl')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.SSL) {
+          setCertFile(data.SSL.certFile || '');
+          setKeyFile(data.SSL.keyFile || '');
+        }
+      });
+  }, []);
+
+
   function showNotification(title: string, message: string, type: 'success' | 'error', shouldRefresh = false) {
     setNotification({ isOpen: true, title, message, type, shouldRefresh })
   }
@@ -79,22 +97,34 @@ export function Settings({ settings, onSave }: {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    
     // Validate PIN if enabled
     if (form.pinEnabled && (form.pin.length < 4 || form.pin.length > 6)) {
       showNotification('Invalid PIN', 'PIN must be between 4 and 6 digits.', 'error')
       return
     }
-    
     setSaving(true)
+    let settingsOk = false, sslOk = false;
     try {
       await onSave(form)
-      showNotification('Settings Saved', 'Your settings have been saved successfully!', 'success')
+      settingsOk = true;
     } catch (error) {
       showNotification('Save Failed', 'Failed to save settings. Please try again.', 'error')
-    } finally {
-      setSaving(false)
     }
+    try {
+      const resp = await fetch('/api/ssl', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ certFile, keyFile })
+      });
+      if (!resp.ok) throw new Error('Failed to save SSL config');
+      sslOk = true;
+    } catch (e) {
+      showNotification('Save Failed', 'Could not update SSL settings.', 'error');
+    }
+    if (settingsOk && sslOk) {
+      showNotification('Settings Saved', 'Your settings have been saved successfully!', 'success');
+    }
+    setSaving(false);
   }
 
   async function exportData() {
@@ -246,6 +276,26 @@ export function Settings({ settings, onSave }: {
               </div>
             </div>
           </div>
+          {/* SSL cert/key fields */}
+          <div className="mb-4">
+            <label className="label">SSL Certificate File</label>
+            <input
+              type="text"
+              className="input h-8 w-full mb-2"
+              value={certFile}
+              onChange={e => setCertFile(e.target.value)}
+              placeholder="./data/ssl/cert.pem"
+            />
+            <label className="label">SSL Key File</label>
+            <input
+              type="text"
+              className="input h-8 w-full"
+              value={keyFile}
+              onChange={e => setKeyFile(e.target.value)}
+              placeholder="./data/ssl/privkey.pem"
+            />
+          </div>
+          {/* Save button */}
           <div className="flex gap-2">
             <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
               {saving ? 'Saving…' : 'Save settings'}
@@ -253,22 +303,23 @@ export function Settings({ settings, onSave }: {
           </div>
         </form>
 
-        <div className="card max-w-lg pt-[0.8rem]">
-          <h2 className="text-lg font-medium mb-[0.1rem] mt-[0.1rem]">Backup & Restore</h2>
-          <p className="text-sm text-rose-700 mb-4">
+      </div>
+  {/* Right column: About panel with Backup & Restore */}
+  <div className="card h-full flex flex-col max-w-lg w-[100%]">
+        <div className="pt-4 mb-4 text-center">
+          <h3 className="text-md font-medium mb-2">Backup & Restore</h3>
+          <p className="text-sm text-rose-700 mb-3 mx-auto">
             Export your cycle data to save a backup, or import a previous backup to restore your data.
           </p>
           <div className="space-y-3">
             <div>
-              <button 
-                className="btn btn-primary w-[97%] h-[1.94rem] mb-2" 
+              <button
+                className="btn btn-primary w-full h-[1.94rem] mb-2"
                 onClick={exportData}
               >
                 💾 Export Data
               </button>
-              <p className="text-xs text-rose-600">
-                Download your cycle data as a backup file
-              </p>
+              <p className="text-xs text-rose-600">Download your cycle data as a backup file</p>
             </div>
             <div>
               <input
@@ -279,33 +330,18 @@ export function Settings({ settings, onSave }: {
                 className="hidden"
                 id="import-file"
               />
-              <button 
-                className="btn btn-ghost w-[97%] h-[1.94rem] mb-2 border border-rose-300" 
+              <button
+                className="btn btn-ghost w-full h-[1.94rem] mb-2 border border-rose-300"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importing}
               >
                 {importing ? '📥 Importing...' : '📥 Import Data'}
               </button>
-              <p className="text-xs text-rose-600">
-                Restore cycle data from a backup file
-              </p>
+              <p className="text-xs text-rose-600">Restore cycle data from a backup file</p>
             </div>
           </div>
         </div>
-      </div>
-      {/* Right column: About panel */}
-      <div className="card h-full flex flex-col max-w-lg">
-        <h2 className="text-lg font-medium mb-2">About</h2>
-        <p className="text-rose-700 text-sm mb-2">
-          <span className="font-semibold">LunaTrack</span> is your private, modern period tracker. Effortlessly log your cycles, moods, and symptoms, and get helpful predictions for your next period.
-        </p>
-        <ul className="text-rose-700 text-sm list-disc pl-5 mb-2">
-          <li><span className="font-semibold">Past Records:</span> View your full cycle history and recent entries for easy reference.</li>
-          <li><span className="font-semibold">Future Prediction:</span> LunaTrack estimates your next period based on your past cycles, helping you plan ahead.</li>
-          <li><span className="font-semibold">All data is stored locally</span> for your privacy.</li>
-          <li><span className="font-semibold">Backup & Restore:</span> Export and import your data for peace of mind.</li>
-          <li><span className="font-semibold">PIN protection:</span> Secure your sensitive information.</li>
-        </ul>
+
         <div className="mt-auto pt-4 text-xs text-rose-400">
           <div>Version 1.0.0</div>
           <div>© {new Date().getFullYear()} LunaTrack</div>
