@@ -69,9 +69,11 @@ export function Settings({ settings, onSave }: {
   // SSL cert/key state
   const [certFile, setCertFile] = useState('');
   const [keyFile, setKeyFile] = useState('');
-  const [sslLoading, setSslLoading] = useState(false);
+  const [httpPort, setHttpPort] = useState('');
+  const [httpsPort, setHttpsPort] = useState('');
+  const [portsLoading, setPortsLoading] = useState(false);
 
-  // Fetch SSL config on mount
+  // Fetch SSL config and port config on mount
   useEffect(() => {
     fetch('/api/ssl')
       .then(r => r.json())
@@ -80,6 +82,12 @@ export function Settings({ settings, onSave }: {
           setCertFile(data.SSL.certFile || '');
           setKeyFile(data.SSL.keyFile || '');
         }
+      });
+    fetch('/api/ports')
+      .then(r => r.json())
+      .then(data => {
+        if (data && typeof data.httpPort !== 'undefined') setHttpPort(String(data.httpPort));
+        if (data && typeof data.httpsPort !== 'undefined') setHttpsPort(String(data.httpsPort));
       });
   }, []);
 
@@ -103,7 +111,7 @@ export function Settings({ settings, onSave }: {
       return
     }
     setSaving(true)
-    let settingsOk = false, sslOk = false;
+  let settingsOk = false, sslOk = false, portsOk = false;
     try {
       await onSave(form)
       settingsOk = true;
@@ -121,7 +129,18 @@ export function Settings({ settings, onSave }: {
     } catch (e) {
       showNotification('Save Failed', 'Could not update SSL settings.', 'error');
     }
-    if (settingsOk && sslOk) {
+    try {
+      const resp = await fetch('/api/ports', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ httpPort: Number(httpPort), httpsPort: Number(httpsPort) })
+      });
+      if (!resp.ok) throw new Error('Failed to save port settings');
+      portsOk = true;
+    } catch (e) {
+      showNotification('Save Failed', 'Could not update port settings.', 'error');
+    }
+    if (settingsOk && sslOk && portsOk) {
       showNotification('Settings Saved', 'Your settings have been saved successfully!', 'success');
     }
     setSaving(false);
@@ -197,7 +216,7 @@ export function Settings({ settings, onSave }: {
 
   return (
     <div className="min-h-[32rem] grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Left column: Settings and Backup & Restore stacked */}
+      {/* Left column: Settings stacked */}
       <div className="md:col-span-2 flex flex-col gap-6">
         <form className="card max-w-lg" onSubmit={submit}>
           <h2 className="text-lg font-medium mb-2">Settings</h2>
@@ -276,9 +295,9 @@ export function Settings({ settings, onSave }: {
               </div>
             </div>
           </div>
-          {/* SSL cert/key fields */}
+          {/* SSL cert/key fields and HTTP/HTTPS port fields */}
           <div className="mb-4">
-            <label className="label">SSL Certificate File</label>
+            <label className="label">SSL Certificate File Path</label>
             <input
               type="text"
               className="input h-8 w-full mb-2"
@@ -286,14 +305,43 @@ export function Settings({ settings, onSave }: {
               onChange={e => setCertFile(e.target.value)}
               placeholder="./data/ssl/cert.pem"
             />
-            <label className="label">SSL Key File</label>
+            <label className="label">SSL Key File Path</label>
             <input
               type="text"
-              className="input h-8 w-full"
+              className="input h-8 w-full mb-2"
               value={keyFile}
               onChange={e => setKeyFile(e.target.value)}
               placeholder="./data/ssl/privkey.pem"
             />
+            {/* HTTP/HTTPS Port fields */}
+            <div className="flex flex-col mt-2">
+              <div className="flex flex-row gap-4 mb-1">
+                <label className="label w-1/2 text-left">HTTP Port</label>
+                <label className="label w-1/2 text-left">HTTPS Port</label>
+              </div>
+              <div className="flex flex-row gap-4">
+                <input
+                  type="number"
+                  className="input h-8 w-[40%]"
+                  value={httpPort}
+                  min={1}
+                  max={65535}
+                  onChange={e => setHttpPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                  placeholder="e.g. 8080"
+                  style={{ minWidth: '0' }}
+                />
+                <input
+                  type="number"
+                  className="input h-8 w-[40%]"
+                  value={httpsPort}
+                  min={1}
+                  max={65535}
+                  onChange={e => setHttpsPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                  placeholder="e.g. 8443"
+                  style={{ minWidth: '0' }}
+                />
+              </div>
+            </div>
           </div>
           {/* Save button */}
           <div className="flex gap-2">
