@@ -236,9 +236,9 @@ export function Settings({ settings, onSave }: {
                 pattern="[0-9]{4,6}"
               />
             </div>
-            <div className="flex flex-col">
-              <label className="label">Enabled</label>
-              <div className="flex items-center h-10">
+            <div className="flex flex-col items-end">
+              <label className="label text-right mr-8">Enabled</label>
+              <div className="flex items-center h-10 justify-end">
                 <input 
                   type="checkbox" 
                   className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2" 
@@ -264,9 +264,9 @@ export function Settings({ settings, onSave }: {
               />
             </div>
 
-            <div>
-              <label className="label">Ovulation</label>
-              <div className="flex items-center h-8">
+            <div className="flex flex-col items-end">
+              <label className="label text-right mr-5">Ovulation</label>
+              <div className="flex items-center h-8 justify-end">
                 <input
                   type="checkbox"
                   className="w-5 h-5 text-primary-500 bg-white border-2 border-rose-300 rounded focus:ring-primary-300 focus:ring-2"
