@@ -344,7 +344,7 @@ export function Settings({ settings, onSave }: {
             </div>
           </div>
           {/* Save button */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-[15%]"> {/* Added margin to push button down REMOVE IF NEW SETTINGS ADDED*/}
             <button className="btn btn-primary w-[97%] h-[1.94rem]" disabled={saving}>
               {saving ? 'Saving…' : 'Save settings'}
             </button>
