@@ -16,6 +16,18 @@ Key functionality included in this release:
 - Dev scripts to run the frontend and backend together in HTTP or HTTPS mode (ports and SSL are read from `data/settings.json`).
 - Local JSON storage only — no external network calls or telemetry by default.
 
+## Screenshots
+A few example screenshots from this build (open in a Markdown viewer to see them inline). Files are in the `screenshots/` folder.
+
+![Calendar view](screenshots/001.png)
+
+![Entries list](screenshots/002.png)
+
+![Cycle stats & predictions](screenshots/003.png)
+
+![Hisory](screenshots/004.png)
+
+![Settings Export / Import (backup) modal](screenshots/005.png)
 
 ## Tech Stack
 - Frontend: React + Vite + TypeScript + Tailwind CSS
@@ -133,3 +145,5 @@ Notes:
 
 ---
 All endpoints return JSON. For more details, see `server/src/index.ts`.
+
+
