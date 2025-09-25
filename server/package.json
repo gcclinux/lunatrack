@@ -7,7 +7,11 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "http": "node --experimental-specifier-resolution=node ./dist/start.js http",
+    "https": "node --experimental-specifier-resolution=node ./dist/start.js https",
+    "dev:http": "tsx src/start.ts http",
+    "dev:https": "tsx src/start.ts https"
   },
   "dependencies": {
     "cors": "^2.8.5",

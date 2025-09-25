@@ -4,9 +4,15 @@
   "private": true,
   "scripts": {
     "install:all": "npm --prefix server install && npm --prefix client install",
-    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+  "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+  "dev:http": "concurrently \"npm --prefix server run dev:http\" \"npm --prefix client run dev:http\"",
+  "dev:https": "concurrently \"npm --prefix server run dev:https\" \"npm --prefix client run dev:https\"",
     "build": "npm --prefix server run build && npm --prefix client run build",
     "start": "npm --prefix server start"
+  },
+  "scripts-addons": {
+    "http": "npm --prefix server run dev:http",
+    "https": "npm --prefix server run dev:https"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

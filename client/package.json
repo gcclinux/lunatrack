@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:http": "cross-env CLIENT_MODE=http vite",
+    "dev:https": "cross-env CLIENT_MODE=https vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
@@ -21,6 +23,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.2",
-    "vite": "^7.1.6"
+    "vite": "^7.1.6",
+    "cross-env": "^7.0.3"
   }
 }

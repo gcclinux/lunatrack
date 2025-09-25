@@ -69,6 +69,7 @@ export function Settings({ settings, onSave }: {
   // SSL cert/key state
   const [certFile, setCertFile] = useState('');
   const [keyFile, setKeyFile] = useState('');
+  const [apiPort, setApiPort] = useState('');
   const [httpPort, setHttpPort] = useState('');
   const [httpsPort, setHttpsPort] = useState('');
   const [portsLoading, setPortsLoading] = useState(false);
@@ -88,6 +89,11 @@ export function Settings({ settings, onSave }: {
       .then(data => {
         if (data && typeof data.httpPort !== 'undefined') setHttpPort(String(data.httpPort));
         if (data && typeof data.httpsPort !== 'undefined') setHttpsPort(String(data.httpsPort));
+      });
+    fetch('/api/api-port')
+      .then(r => r.json())
+      .then(data => {
+        if (data && typeof data.apiPort !== 'undefined') setApiPort(String(data.apiPort));
       });
   }, []);
 
@@ -111,7 +117,7 @@ export function Settings({ settings, onSave }: {
       return
     }
     setSaving(true)
-  let settingsOk = false, sslOk = false, portsOk = false;
+  let settingsOk = false, sslOk = false, portsOk = false, apiOk = false;
     try {
       await onSave(form)
       settingsOk = true;
@@ -140,7 +146,18 @@ export function Settings({ settings, onSave }: {
     } catch (e) {
       showNotification('Save Failed', 'Could not update port settings.', 'error');
     }
-    if (settingsOk && sslOk && portsOk) {
+    try {
+      const resp = await fetch('/api/api-port', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiPort: Number(apiPort) })
+      });
+      if (!resp.ok) throw new Error('Failed to save API port');
+      apiOk = true;
+    } catch (e) {
+      showNotification('Save Failed', 'Could not update API port.', 'error');
+    }
+    if (settingsOk && sslOk && portsOk && apiOk) {
       showNotification('Settings Saved', 'Your settings have been saved successfully!', 'success');
     }
     setSaving(false);
@@ -315,32 +332,43 @@ export function Settings({ settings, onSave }: {
             />
             {/* HTTP/HTTPS Port fields */}
             <div className="flex flex-col mt-2">
-              <div className="flex flex-row gap-4 mb-1">
-                <label className="label w-1/2 text-left">HTTP Port</label>
-                <label className="label w-1/2 text-left">HTTPS Port</label>
-              </div>
-              <div className="flex flex-row gap-4">
-                <input
-                  type="number"
-                  className="input h-8 w-[40%]"
-                  value={httpPort}
-                  min={1}
-                  max={65535}
-                  onChange={e => setHttpPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                  placeholder="e.g. 8080"
-                  style={{ minWidth: '0' }}
-                />
-                <input
-                  type="number"
-                  className="input h-8 w-[40%]"
-                  value={httpsPort}
-                  min={1}
-                  max={65535}
-                  onChange={e => setHttpsPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                  placeholder="e.g. 8443"
-                  style={{ minWidth: '0' }}
-                />
-              </div>
+                <div className="flex flex-row gap-4 mb-1">
+                  <label className="label w-1/3 text-left">HTTP Port</label>
+                  <label className="label w-1/3 text-left">HTTPS Port</label>
+                  <label className="label w-1/3 text-left">API Port</label>
+                </div>
+                <div className="flex flex-row gap-4">
+                  <input
+                    type="number"
+                    className="input h-8 w-[30%]"
+                    value={httpPort}
+                    min={1}
+                    max={65535}
+                    onChange={e => setHttpPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    placeholder="e.g. 8080"
+                    style={{ minWidth: '0' }}
+                  />
+                  <input
+                    type="number"
+                    className="input h-8 w-[30%]"
+                    value={httpsPort}
+                    min={1}
+                    max={65535}
+                    onChange={e => setHttpsPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    placeholder="e.g. 8443"
+                    style={{ minWidth: '0' }}
+                  />
+                  <input
+                    type="number"
+                    className="input h-8 w-[30%]"
+                    value={apiPort}
+                    min={1}
+                    max={65535}
+                    onChange={e => setApiPort(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    placeholder="e.g. 3001"
+                    style={{ minWidth: '0' }}
+                  />
+                </div>
             </div>
           </div>
           {/* Save button */}

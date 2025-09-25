@@ -45,7 +45,8 @@ const SettingsSchema = z.object({
   fileProtected: z.boolean().default(false),
   SSL: SSLSchema.optional(),
   httpPort: z.number().int().default(5173),
-  httpsPort: z.number().int().default(7379)
+  httpsPort: z.number().int().default(7379),
+  apiPort: z.number().int().default(3001)
 });
 // GET ports
 app.get('/api/ports', async (_req, res) => {
@@ -68,6 +69,35 @@ app.put('/api/ports', async (req, res) => {
     const updated = { ...s, httpPort, httpsPort };
     await writeSettings(updated);
     res.json({ httpPort, httpsPort });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// GET API port
+app.get('/api/api-port', async (_req, res) => {
+  try {
+    const s = await readSettings();
+    res.json({ apiPort: s.apiPort });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT API port
+app.put('/api/api-port', async (req, res) => {
+  try {
+    const { apiPort } = req.body;
+    if (typeof apiPort !== 'number') {
+      return res.status(400).json({ error: 'apiPort must be a number' });
+    }
+    if (!Number.isInteger(apiPort) || apiPort < 1 || apiPort > 65535) {
+      return res.status(400).json({ error: 'apiPort must be an integer between 1 and 65535' });
+    }
+    const s = await readSettings();
+    const updated = { ...s, apiPort };
+    await writeSettings(updated);
+    res.json({ apiPort });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
@@ -323,7 +353,6 @@ app.get('/api/inspiration/:id', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`LunaTrack server running on http://localhost:${PORT}`);
-});
+// The app is exported and started from a separate start script which reads
+// ports and SSL config from data/settings.json.
+export default app;

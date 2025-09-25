@@ -68,6 +68,8 @@ Root helper (optional):
 - `PUT /api/ports` — updates both ports (expects { httpPort, httpsPort } as numbers)
 - `GET /api/ssl` — returns the SSL config from settings.
 - `PUT /api/ssl` — updates the SSL config in settings (validates certFile and keyFile as strings)
+- `GET /api/api-port` — returns { apiPort: number }
+- `PUT /api/api-port` — accepts { apiPort: number }, validates it's an integer 1–65535, writes to settings.json, and returns { apiPort }.
 
 ### Entries
 - `GET /api/entries` — Get all period entries and stats (cycle length, predictions, etc).
