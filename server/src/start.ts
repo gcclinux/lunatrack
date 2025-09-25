@@ -30,8 +30,19 @@ async function start() {
       console.error('SSL config not found in settings.json; cannot start HTTPS')
       process.exit(1)
     }
-    const certPath = path.isAbsolute(ssl.certFile) ? ssl.certFile : path.join(DATA_DIR, ssl.certFile)
-    const keyPath = path.isAbsolute(ssl.keyFile) ? ssl.keyFile : path.join(DATA_DIR, ssl.keyFile)
+    // Resolve paths: accept absolute paths or resolve relative to DATA_DIR
+    let certPath = ssl.certFile
+    let keyPath = ssl.keyFile
+    if (!path.isAbsolute(certPath)) {
+      const relative = certPath.replace(/^data[\\/]/, '')
+      certPath = path.join(DATA_DIR, relative)
+    }
+    if (!path.isAbsolute(keyPath)) {
+      const relative = keyPath.replace(/^data[\\/]/, '')
+      keyPath = path.join(DATA_DIR, relative)
+    }
+    console.log('Using SSL cert/key:', certPath, keyPath)
+    // Final check
     if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
       console.error('SSL files not found:', certPath, keyPath)
       process.exit(1)
